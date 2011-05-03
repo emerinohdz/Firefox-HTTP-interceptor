@@ -1,0 +1,37 @@
+Un ResponseInterceptor se encarga de interceptar las respuestas
+enviadas por un servidor HTTP, siendo posible registrar objetos
+interesados en éstas para su procesamiento.
+
+Cada ResponseInterceptor debe implementar el método  
+ResponseInterceptor#createChannelListener(matcher),
+el cual debe devolver un nsITraceableListener, que es el que se
+encargará de realizar las acciones necesarias sobre la respuesta recibida.
+
+En el script se incluye una implementación de esta interfaz que se
+encarga de descargar a una carpeta seleccionada el contenido de la
+respuesta, dicha implementación es
+DevPower.Http.ResponseInterceptor.Downloader.
+
+En el script se incluye una implementación básica de uno llamada UrlMatcher,
+el cual verifica si la url de la respuesta actual coincide con alguna de las que
+se tienen registradas en el matcher. Dichas urls deben ser expresiones
+regulares.
+
+Independientemente de la implementación utilizada de los
+nsITraceableListeners, cada uno de estos que se creen almacenarán el listener
+original en la propiedad nsITraceableListenerImplementation.originalListener.
+
+
+Ejemplo de uso:
+
+var MyInterceptor = new DevPower.Http.ResponseInterceptor();
+MyInterceptor.createChannelListener = function(matcher) {
+    return new DevPower.Http.ResponseInterceptor.Downloader("/home/user/downloads", "mp3");
+};
+
+var matcher = new DevPower.Http.ResponseInterceptor.UrlMatcher();
+matcher.addUrl("^http://www.example.com$");
+matcher.addUrl("^http://devio.us/.*");
+ 
+MyInterceptor.addMatcher("mymatcher", matcher);
+MyInterceptor.start();
